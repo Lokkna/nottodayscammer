@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NotTodayScammer! — Free Instant Scam Detection</title>
+<meta name="description" content="Suspicious message? Weird link? Strange phone call? Paste it here and get an instant AI verdict. Free. No signup. Built to protect everyone.">
+<meta property="og:title" content="NotTodayScammer! — Free Instant Scam Detection">
+<meta property="og:description" content="Paste any suspicious message, link, or call. Get an instant AI verdict. Free. No signup.">
+<meta name="theme-color" content="#1a1f2e">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #1a1f2e;
+    --navy2: #232938;
+    --navy3: #2d3448;
+    --blue: #4f8ef7;
+    --blue-dim: rgba(79,142,247,0.12);
+    --blue-border: rgba(79,142,247,0.25);
+    --green: #2ecc8a;
+    --green-dim: rgba(46,204,138,0.12);
+    --green-border: rgba(46,204,138,0.25);
+    --amber: #f5a623;
+    --amber-dim: rgba(245,166,35,0.12);
+    --amber-border: rgba(245,166,35,0.25);
+    --red: #f05252;
+    --red-dim: rgba(240,82,82,0.12);
+    --red-border: rgba(240,82,82,0.3);
+    --white: #f0f2f8;
+    --gray: #8892a4;
+    --border: rgba(240,242,248,0.08);
+    --border2: rgba(240,242,248,0.14);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--navy);
+    color: var(--white);
+    font-family: 'Space Grotesk', sans-serif;
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  .container { max-width: 700px; margin: 0 auto; padding: 0 20px; }
+
+  /* Top bar */
+  .topbar {
+    border-bottom: 1px solid var(--border);
+    padding: 14px 0;
+  }
+
+  .topbar-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+  }
+
+  .logo-icon {
+    width: 32px;
+    height: 32px;
+    background: var(--blue-dim);
+    border: 1px solid var(--blue-border);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+  }
+
+  .logo-text {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--white);
+    letter-spacing: -0.3px;
+  }
+
+  .logo-text span { color: var(--blue); }
+
+  .badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 99px;
+    background: var(--green-dim);
+    color: var(--green);
+    border: 1px solid var(--green-border);
+    letter-spacing: 0.04em;
+  }
+
+  /* Hero */
+  .hero {
+    padding: 52px 0 36px;
+    text-align: center;
+  }
+
+  .hero-eyebrow {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--blue);
+    margin-bottom: 16px;
+  }
+
+  .hero h1 {
+    font-size: clamp(32px, 7vw, 52px);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -1px;
+    margin-bottom: 16px;
+    color: var(--white);
+  }
+
+  .hero h1 em {
+    font-style: normal;
+    color: var(--blue);
+  }
+
+  .hero-sub {
+    font-size: 16px;
+    color: var(--gray);
+    max-width: 480px;
+    margin: 0 auto 28px;
+    line-height: 1.7;
+  }
+
+  .trust-row {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .trust-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--gray);
+  }
+
+  .trust-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: pulse 2.5s infinite;
+  }
+
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+
+  /* Analyzer card */
+  .analyzer {
+    background: var(--navy2);
+    border: 1px solid var(--border2);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 40px;
+  }
+
+  .analyzer-header {
+    padding: 20px 24px 0;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--navy);
+    border-radius: 10px;
+    padding: 4px;
+    margin-bottom: 20px;
+  }
+
+  .tab {
+    flex: 1;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 8px 4px;
+    border-radius: 7px;
+    border: none;
+    background: transparent;
+    color: var(--gray);
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .tab:hover { color: var(--white); }
+
+  .tab.active {
+    background: var(--navy2);
+    color: var(--white);
+    box-shadow: 0 0 0 1px var(--border2);
+  }
+
+  .analyzer-body { padding: 0 24px 24px; }
+
+  .input-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .input-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gray);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .char-count {
+    font-size: 11px;
+    color: var(--gray);
+    font-family: 'Space Mono', monospace;
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 130px;
+    padding: 14px 16px;
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    line-height: 1.65;
+    background: var(--navy);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    color: var(--white);
+    resize: vertical;
+    transition: border-color 0.15s;
+    margin-bottom: 12px;
+  }
+
+  textarea:focus { outline: none; border-color: var(--blue-border); }
+  textarea::placeholder { color: var(--gray); opacity: 0.5; }
+
+  .examples-label {
+    font-size: 11px;
+    color: var(--gray);
+    margin-bottom: 6px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .examples {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+
+  .ex-btn {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 5px 10px;
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    background: var(--navy);
+    color: var(--gray);
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .ex-btn:hover { border-color: var(--blue-border); color: var(--white); }
+
+  .analyze-btn {
+    width: 100%;
+    padding: 15px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    background: var(--blue);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .analyze-btn:hover { opacity: 0.9; }
+  .analyze-btn:active { transform: scale(0.99); }
+  .analyze-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  /* Results */
+  #result { margin-top: 0; }
+
+  .loading {
+    padding: 36px 24px;
+    text-align: center;
+    color: var(--gray);
+    border-top: 1px solid var(--border);
+  }
+
+  .loading-icon {
+    font-size: 28px;
+    margin-bottom: 10px;
+    animation: spin 1.5s linear infinite;
+    display: inline-block;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-text { font-size: 14px; font-weight: 500; color: var(--white); }
+  .loading-sub { font-size: 12px; color: var(--gray); margin-top: 4px; }
+
+  .dots span { animation: blink 1.2s infinite both; }
+  .dots span:nth-child(2) { animation-delay: 0.2s; }
+  .dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes blink { 0%,80%,100%{opacity:0} 40%{opacity:1} }
+
+  .result-wrap {
+    border-top: 1px solid var(--border);
+    animation: fadeUp 0.3s ease;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .verdict-header {
+    padding: 20px 24px;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .verdict-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+
+  .icon-scam { background: var(--red-dim); border: 1px solid var(--red-border); }
+  .icon-suspicious { background: var(--amber-dim); border: 1px solid var(--amber-border); }
+  .icon-safe { background: var(--green-dim); border: 1px solid var(--green-border); }
+
+  .verdict-info { flex: 1; min-width: 0; }
+
+  .verdict-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .label-scam { color: var(--red); }
+  .label-suspicious { color: var(--amber); }
+  .label-safe { color: var(--green); }
+
+  .verdict-summary {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--white);
+    line-height: 1.4;
+    margin-bottom: 10px;
+  }
+
+  .meter-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .meter-track {
+    flex: 1;
+    height: 5px;
+    background: var(--navy);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+
+  .meter-fill {
+    height: 100%;
+    border-radius: 99px;
+    transition: width 0.9s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  .fill-scam { background: var(--red); }
+  .fill-suspicious { background: var(--amber); }
+  .fill-safe { background: var(--green); }
+
+  .meter-pct {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--gray);
+    min-width: 38px;
+    text-align: right;
+  }
+
+  .result-body { padding: 0 24px 24px; }
+
+  .section-head {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gray);
+    margin: 0 0 10px;
+  }
+
+  .flags { margin-bottom: 20px; }
+
+  .flag {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--white);
+    line-height: 1.5;
+  }
+
+  .flag:last-child { border-bottom: none; }
+
+  .flag-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .fi-danger { background: var(--red-dim); color: var(--red); }
+  .fi-warning { background: var(--amber-dim); color: var(--amber); }
+  .fi-safe { background: var(--green-dim); color: var(--green); }
+
+  .advice-box {
+    background: var(--navy);
+    border: 1px solid var(--border2);
+    border-left: 3px solid var(--blue);
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 14px;
+    color: var(--white);
+    line-height: 1.7;
+    margin-bottom: 16px;
+  }
+
+  .action-row {
+    display: flex;
+    gap: 8px;
+  }
+
+  .act-btn {
+    flex: 1;
+    padding: 10px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--gray);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .act-btn:hover { border-color: var(--blue-border); color: var(--white); background: var(--blue-dim); }
+
+  /* How it works */
+  .how-section { padding: 0 0 48px; }
+
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gray);
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  .how-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+  }
+
+  .how-card {
+    background: var(--navy2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+  }
+
+  .how-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--blue);
+    margin-bottom: 8px;
+  }
+
+  .how-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--white);
+    margin-bottom: 4px;
+  }
+
+  .how-desc { font-size: 12px; color: var(--gray); line-height: 1.6; }
+
+  /* Footer */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 24px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .footer-brand {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--white);
+  }
+
+  .footer-brand span { color: var(--blue); }
+
+  .footer-note {
+    font-size: 11px;
+    color: var(--gray);
+    text-align: right;
+    line-height: 1.6;
+  }
+
+  .error-box {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    background: var(--red-dim);
+    font-size: 13px;
+    color: var(--red);
+  }
+
+  @media (max-width: 500px) {
+    .hero { padding: 36px 0 28px; }
+    .tabs { gap: 2px; }
+    .tab { font-size: 11px; padding: 7px 2px; }
+    .analyzer-header, .analyzer-body { padding-left: 16px; padding-right: 16px; }
+    .verdict-header { padding: 16px; }
+    .result-body { padding: 0 16px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="container">
+    <div class="topbar-inner">
+      <a class="logo" href="/">
+        <div class="logo-icon">🛡</div>
+        <span class="logo-text"><span>NotToday</span>Scammer!</span>
+      </a>
+      <span class="badge">Free &amp; No Signup</span>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+  <section class="hero">
+    <p class="hero-eyebrow">AI-powered scam detection</p>
+    <h1>They picked the <em>wrong</em> person.</h1>
+    <p class="hero-sub">Paste any suspicious message, link, or describe a phone call. Get an instant AI verdict — plain language, no jargon, no signup.</p>
+    <div class="trust-row">
+      <span class="trust-item"><span class="trust-dot"></span> Detects new &amp; unknown scams</span>
+      <span class="trust-item"><span class="trust-dot" style="background:var(--blue)"></span> Your data is never stored</span>
+      <span class="trust-item"><span class="trust-dot" style="background:var(--amber)"></span> Built for everyone</span>
+    </div>
+  </section>
+
+  <div class="analyzer">
+    <div class="analyzer-header">
+      <div class="tabs">
+        <button class="tab active" onclick="setTab(this,'message')">Message / Email</button>
+        <button class="tab" onclick="setTab(this,'url')">Link / URL</button>
+        <button class="tab" onclick="setTab(this,'call')">Phone Call</button>
+        <button class="tab" onclick="setTab(this,'payment')">Payment</button>
+      </div>
+    </div>
+
+    <div class="analyzer-body">
+      <div class="input-row">
+        <span class="input-label" id="input-label">Paste message or email</span>
+        <span class="char-count" id="char-count">0 chars</span>
+      </div>
+      <textarea id="sf-input" placeholder="Paste the suspicious content here..." oninput="updateCount()"></textarea>
+
+      <p class="examples-label">Try an example</p>
+      <div class="examples" id="examples"></div>
+
+      <button class="analyze-btn" id="analyze-btn" onclick="analyze()">
+        🛡 Analyze Now — Not Today, Scammer!
+      </button>
+    </div>
+
+    <div id="result"></div>
+  </div>
+
+  <section class="how-section">
+    <p class="section-title">How it works</p>
+    <div class="how-grid">
+      <div class="how-card">
+        <p class="how-num">01</p>
+        <p class="how-title">Paste anything suspicious</p>
+        <p class="how-desc">Message, email, link, phone script, or payment request — any format works.</p>
+      </div>
+      <div class="how-card">
+        <p class="how-num">02</p>
+        <p class="how-title">AI reads the red flags</p>
+        <p class="how-desc">Our AI detects manipulation tactics, fake urgency, spoofed domains, and known scam patterns.</p>
+      </div>
+      <div class="how-card">
+        <p class="how-num">03</p>
+        <p class="how-title">Plain-language verdict</p>
+        <p class="how-desc">Safe, Suspicious, or Scam — with exactly what to do next. No jargon. No confusion.</p>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div class="container">
+  <footer>
+    <div class="footer-brand"><span>NotToday</span>Scammer!</div>
+    <div class="footer-note">
+      By Ndole Media Group &nbsp;·&nbsp; No data stored &nbsp;·&nbsp; Free forever
+    </div>
+  </footer>
+</div>
+
+<script>
+const TABS = {
+  message: {
+    label: 'Paste message or email',
+    placeholder: 'Paste the suspicious email, text message, or DM here...',
+    tabLabel: 'message or email',
+    examples: [
+      { short: 'Amazon gift card win', full: 'Congratulations! You won a $500 Amazon gift card. Click here to claim: bit.ly/cl41m-now' },
+      { short: 'IRS arrest threat', full: 'This is the IRS. Your SSN has been suspended due to suspicious activity. Call 1-800-555-0199 immediately or face arrest.' },
+      { short: 'Fake DMV notice', full: 'State of California DMV — Urgent Notice. A traffic citation under your name remains unpaid. Submit payment here: https://ca.org-elqwu.bond/dmv or your license will be revoked.' },
+      { short: 'Grandchild in jail', full: "Hi Grandma, it's me. I lost my phone and I'm in jail. Please send $800 via Zelle right away. Don't tell Mom." }
+    ]
+  },
+  url: {
+    label: 'Paste suspicious URL',
+    placeholder: 'Paste the suspicious link here — do NOT visit it first...',
+    tabLabel: 'URL or link',
+    examples: [
+      { short: 'Fake PayPal login', full: 'http://paypa1-secure.account-verify.com/login' },
+      { short: 'Fake IRS refund', full: 'https://irs-gov-refund-2024.com/claim-your-refund' },
+      { short: 'Fake DMV domain', full: 'https://ca.org-elqwu.bond/dmv' }
+    ]
+  },
+  call: {
+    label: 'Describe the phone call',
+    placeholder: 'Describe what the caller said, as best you remember...',
+    tabLabel: 'phone call description',
+    examples: [
+      { short: 'SSN suspended robocall', full: 'A robocall said my Social Security number has been suspended due to suspicious activity and I need to press 1 to speak to a federal officer immediately.' },
+      { short: 'Microsoft tech support', full: 'Someone called saying they were from Microsoft and my computer was sending out viruses. They needed remote access to fix it and wanted me to install software.' },
+      { short: 'Grandparent bail scam', full: 'A man called saying he was my grandson and he was in jail after a car accident. He needed me to wire $2,000 bail money immediately and not to tell anyone.' }
+    ]
+  },
+  payment: {
+    label: 'Describe the payment request',
+    placeholder: 'Who is asking for money, how much, and how do they want to be paid?',
+    tabLabel: 'payment request',
+    examples: [
+      { short: 'Gift card tax demand', full: 'Someone called from the Social Security Administration saying I owe back taxes. They told me to buy $500 in Google Play gift cards and read them the codes to avoid arrest.' },
+      { short: 'Zelle before shipping', full: 'I found a great deal on Facebook Marketplace. The seller insists I pay $600 via Zelle before they will ship the item. They say they are out of state.' },
+      { short: 'Overpayment check', full: "I got a cashier's check for $3,500 for a mystery shopping job. They want me to deposit it, keep $500, and wire the remaining $3,000 for supplies." }
+    ]
+  }
+};
+
+let currentTab = 'message';
+
+function setTab(el, tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  currentTab = tab;
+  const cfg = TABS[tab];
+  document.getElementById('sf-input').placeholder = cfg.placeholder;
+  document.getElementById('input-label').textContent = cfg.label;
+  document.getElementById('result').innerHTML = '';
+  renderExamples(tab);
+  updateCount();
+}
+
+function renderExamples(tab) {
+  document.getElementById('examples').innerHTML = TABS[tab].examples.map(ex =>
+    `<button class="ex-btn" title="${ex.full}" onclick="loadEx(this)"  data-full="${ex.full.replace(/"/g, '&quot;')}">${ex.short}</button>`
+  ).join('');
+}
+
+function loadEx(btn) {
+  document.getElementById('sf-input').value = btn.dataset.full;
+  updateCount();
+}
+
+function updateCount() {
+  const len = document.getElementById('sf-input').value.length;
+  document.getElementById('char-count').textContent = len + ' chars';
+}
+
+renderExamples('message');
+
+async function analyze() {
+  const input = document.getElementById('sf-input').value.trim();
+  if (!input) { document.getElementById('sf-input').focus(); return; }
+
+  const btn = document.getElementById('analyze-btn');
+  btn.disabled = true;
+
+  document.getElementById('result').innerHTML = `
+    <div class="loading">
+      <div class="loading-icon">⟳</div>
+      <div class="loading-text">Analyzing<span class="dots"><span>.</span><span>.</span><span>.</span></span></div>
+      <div class="loading-sub">Running AI scam detection</div>
+    </div>`;
+
+  try {
+    const res = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: input, tabLabel: TABS[currentTab].tabLabel })
+    });
+
+    if (!res.ok) throw new Error('Server error ' + res.status);
+    const result = await res.json();
+    if (result.error) throw new Error(result.error);
+    renderResult(result);
+  } catch (e) {
+    document.getElementById('result').innerHTML = `<div class="error-box">Analysis failed: ${e.message}. Please try again.</div>`;
+  }
+
+  btn.disabled = false;
+}
+
+function renderResult(r) {
+  const isScam = r.verdict === 'SCAM';
+  const isSusp = r.verdict === 'SUSPICIOUS';
+  const isSafe = r.verdict === 'SAFE';
+
+  const iconClass = isScam ? 'icon-scam' : isSusp ? 'icon-suspicious' : 'icon-safe';
+  const icon = isScam ? '✕' : isSusp ? '▲' : '✓';
+  const labelClass = isScam ? 'label-scam' : isSusp ? 'label-suspicious' : 'label-safe';
+  const fillClass = isScam ? 'fill-scam' : isSusp ? 'fill-suspicious' : 'fill-safe';
+
+  const fiClass = { danger: 'fi-danger', warning: 'fi-warning', safe: 'fi-safe' };
+  const fiIcon = { danger: '✕', warning: '▲', safe: '✓' };
+
+  const flags = (r.flags || []).map(f => `
+    <div class="flag">
+      <div class="flag-icon ${fiClass[f.type] || 'fi-warning'}">${fiIcon[f.type] || '▲'}</div>
+      <span>${f.text}</span>
+    </div>`).join('');
+
+  const conf = Math.round(r.confidence || 0);
+
+  document.getElementById('result').innerHTML = `
+    <div class="result-wrap">
+      <div class="verdict-header">
+        <div class="verdict-icon ${iconClass}">${icon}</div>
+        <div class="verdict-info">
+          <div class="verdict-label ${labelClass}">${r.verdict}</div>
+          <div class="verdict-summary">${r.summary}</div>
+          <div class="meter-row">
+            <div class="meter-track"><div class="meter-fill ${fillClass}" style="width:${conf}%"></div></div>
+            <span class="meter-pct">${conf}% confidence</span>
+          </div>
+        </div>
+      </div>
+      <div class="result-body">
+        <p class="section-head">What we found</p>
+        <div class="flags">${flags}</div>
+        <p class="section-head">What to do right now</p>
+        <div class="advice-box">${r.advice}</div>
+        <div class="action-row">
+          <button class="act-btn" onclick="reset()">↺ New check</button>
+          <button class="act-btn" onclick="copyResult()">⎘ Copy verdict</button>
+          <button class="act-btn" onclick="shareResult()">↗ Share</button>
+        </div>
+      </div>
+    </div>`;
+
+  window._lastResult = r;
+}
+
+function reset() {
+  document.getElementById('sf-input').value = '';
+  document.getElementById('result').innerHTML = '';
+  updateCount();
+}
+
+function copyResult() {
+  const r = window._lastResult;
+  if (!r) return;
+  const text = `NotTodayScammer! Verdict: ${r.verdict} (${Math.round(r.confidence)}% confidence)\n\n${r.summary}\n\nWhat to do: ${r.advice}\n\nCheck your own suspicious messages free at nottodayscammer.com`;
+  navigator.clipboard.writeText(text).catch(() => {});
+}
+
+function shareResult() {
+  const r = window._lastResult;
+  if (!r) return;
+  const text = `I just used NotTodayScammer! to check a suspicious message — verdict: ${r.verdict}. Check yours free at nottodayscammer.com`;
+  if (navigator.share) {
+    navigator.share({ title: 'NotTodayScammer!', text, url: 'https://nottodayscammer.com' }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(text).catch(() => {});
+  }
+}
+</script>
+</body>
+</html>
