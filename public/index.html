@@ -165,7 +165,7 @@
     border: 1px solid var(--border2);
     border-radius: 16px;
     overflow: hidden;
-    margin-bottom: 40px;
+    margin-bottom: 14px;
   }
 
   .analyzer-header {
@@ -469,7 +469,15 @@
     font-size: 14px;
     color: var(--white);
     line-height: 1.7;
+    margin-bottom: 12px;
+  }
+
+  .result-disclaimer {
+    font-size: 11px;
+    color: var(--gray);
+    line-height: 1.6;
     margin-bottom: 16px;
+    padding: 0 2px;
   }
 
   .action-row {
@@ -492,6 +500,26 @@
   }
 
   .act-btn:hover { border-color: var(--blue-border); color: var(--white); background: var(--blue-dim); }
+
+  /* Persistent disclaimer under analyzer card */
+  .global-disclaimer {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    font-size: 12px;
+    color: var(--gray);
+    line-height: 1.6;
+    padding: 12px 14px;
+    background: var(--navy2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 40px;
+  }
+
+  .global-disclaimer .gd-icon {
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
 
   /* How it works */
   .how-section { padding: 0 0 48px; }
@@ -633,6 +661,11 @@
     </div>
 
     <div id="result"></div>
+  </div>
+
+  <div class="global-disclaimer">
+    <span class="gd-icon">⚠</span>
+    <span>This tool uses AI and can make mistakes — it is not a substitute for your own judgment. Treat every verdict as a second opinion, not a final answer, and always do your own due diligence (verify with the real company, bank, or family member directly) before acting on anything, especially involving money.</span>
   </div>
 
   <section class="how-section">
@@ -815,6 +848,7 @@ function renderResult(r) {
         <div class="flags">${flags}</div>
         <p class="section-head">What to do right now</p>
         <div class="advice-box">${r.advice}</div>
+        <p class="result-disclaimer">⚠ This is AI-generated analysis and may not be 100% accurate. Use it as a helpful second opinion, not a final answer — verify independently before taking action.</p>
         <div class="action-row">
           <button class="act-btn" onclick="reset()">↺ New check</button>
           <button class="act-btn" onclick="copyResult()">⎘ Copy verdict</button>
