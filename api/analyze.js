@@ -7,7 +7,10 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) return res.status(500).json({ error: 'API key not configured' });
+  if (!apiKey) {
+    console.error('ANTHROPIC_API_KEY is not set');
+    return res.status(500).json({ error: 'Something went wrong on our end. Please try again in a moment.' });
+  }
 
   const { content, tabLabel } = req.body;
   if (!content) return res.status(400).json({ error: 'No content provided' });
@@ -25,6 +28,7 @@ Rules:
 - If SCAM or SUSPICIOUS: be firm and name the exact tactic being used.
 - If a URL: flag the domain name specifically if suspicious.
 - If SAFE: still note anything to watch for.
+- IMPORTANT: When genuinely uncertain or borderline, lean toward SUSPICIOUS rather than SAFE. A false "SAFE" on a real scam is far more harmful than an unnecessary caution on a real safe message. Only return SAFE when you are confident there are no red flags at all.
 - Return ONLY the JSON object.
 
 Content to analyze:
@@ -41,23 +45,29 @@ ${content}`;
       body: JSON.stringify({
         model: 'claude-sonnet-4-5',
         max_tokens: 1000,
+        temperature: 0,
         messages: [{ role: 'user', content: prompt }]
       })
     });
 
     if (!response.ok) {
       const err = await response.text();
-      return res.status(response.status).json({ error: err });
+      console.error('Anthropic API error:', response.status, err);
+      return res.status(502).json({ error: 'Our AI service is temporarily unavailable. Please try again in a moment.' });
     }
 
     const data = await response.json();
     const raw = (data.content || []).find(b => b.type === 'text')?.text || '';
     const match = raw.match(/\{[\s\S]*\}/);
-    if (!match) return res.status(500).json({ error: 'Invalid AI response' });
+    if (!match) {
+      console.error('Could not parse AI response as JSON:', raw);
+      return res.status(502).json({ error: 'We had trouble analyzing that. Please try again.' });
+    }
 
     const result = JSON.parse(match[0]);
     return res.status(200).json(result);
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    console.error('Unexpected error in /api/analyze:', err);
+    return res.status(500).json({ error: 'Something went wrong. Please try again in a moment.' });
   }
 }
