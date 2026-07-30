@@ -12,10 +12,22 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Something went wrong on our end. Please try again in a moment.' });
   }
 
-  const { content, tabLabel } = req.body;
-  if (!content) return res.status(400).json({ error: 'No content provided' });
+  const { content, image, mediaType, tabLabel } = req.body;
 
-  const prompt = `You are NotTodayScammer!, an expert scam detection AI protecting people — especially elderly and vulnerable individuals — from fraud, scams, and manipulation.
+  if (!content && !image) {
+    return res.status(400).json({ error: 'No content provided' });
+  }
+
+  if (image && image.length > 8000000) {
+    return res.status(400).json({ error: 'That image is too large. Please try a smaller screenshot.' });
+  }
+
+  const allowedMediaTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+  if (image && !allowedMediaTypes.includes(mediaType)) {
+    return res.status(400).json({ error: 'Unsupported image format. Please use JPEG, PNG, GIF, or WebP.' });
+  }
+
+  const basePrompt = `You are NotTodayScammer!, an expert scam detection AI protecting people — especially elderly and vulnerable individuals — from fraud, scams, and manipulation.
 
 Analyze this ${tabLabel || 'content'} and respond ONLY with a valid JSON object. No markdown, no backticks, no explanation before or after.
 
@@ -29,10 +41,28 @@ Rules:
 - If a URL: flag the domain name specifically if suspicious.
 - If SAFE: still note anything to watch for.
 - IMPORTANT: When genuinely uncertain or borderline, lean toward SUSPICIOUS rather than SAFE. A false "SAFE" on a real scam is far more harmful than an unnecessary caution on a real safe message. Only return SAFE when you are confident there are no red flags at all.
-- Return ONLY the JSON object.
+- Return ONLY the JSON object.`;
 
-Content to analyze:
-${content}`;
+  let messageContent;
+
+  if (image) {
+    messageContent = [
+      {
+        type: 'image',
+        source: {
+          type: 'base64',
+          media_type: mediaType,
+          data: image
+        }
+      },
+      {
+        type: 'text',
+        text: `${basePrompt}\n\nThe image above is a screenshot the user is asking you to analyze. Read any visible text, sender names, phone numbers, URLs, or logos in the image and evaluate it for scam indicators just as you would with pasted text.`
+      }
+    ];
+  } else {
+    messageContent = `${basePrompt}\n\nContent to analyze:\n${content}`;
+  }
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -46,7 +76,7 @@ ${content}`;
         model: 'claude-sonnet-4-5',
         max_tokens: 1000,
         temperature: 0,
-        messages: [{ role: 'user', content: prompt }]
+        messages: [{ role: 'user', content: messageContent }]
       })
     });
 
