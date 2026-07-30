@@ -183,6 +183,7 @@
     border-radius: 10px;
     padding: 4px;
     margin-bottom: 20px;
+    flex-wrap: wrap;
   }
 
   .tab {
@@ -198,6 +199,7 @@
     cursor: pointer;
     transition: all 0.15s;
     white-space: nowrap;
+    min-width: 90px;
   }
 
   .tab:hover { color: var(--white); }
@@ -307,6 +309,77 @@
   .analyze-btn:hover { opacity: 0.9; }
   .analyze-btn:active { transform: scale(0.99); }
   .analyze-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  /* Upload zone (Screenshot tab) */
+  .upload-zone {
+    border: 2px dashed var(--border2);
+    border-radius: 10px;
+    background: var(--navy);
+    padding: 32px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-bottom: 16px;
+  }
+
+  .upload-zone:hover, .upload-zone.dragover {
+    border-color: var(--blue-border);
+    background: var(--blue-dim);
+  }
+
+  .upload-icon {
+    font-size: 28px;
+    margin-bottom: 10px;
+  }
+
+  .upload-text {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--white);
+    margin-bottom: 4px;
+  }
+
+  .upload-sub {
+    font-size: 12px;
+    color: var(--gray);
+  }
+
+  .upload-input { display: none; }
+
+  .preview-wrap {
+    position: relative;
+    margin-bottom: 16px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border2);
+    background: var(--navy);
+  }
+
+  .preview-img {
+    width: 100%;
+    max-height: 320px;
+    object-fit: contain;
+    display: block;
+  }
+
+  .preview-remove {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: rgba(26,31,46,0.85);
+    border: 1px solid var(--border2);
+    color: var(--white);
+    font-size: 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .preview-remove:hover { background: var(--red-dim); border-color: var(--red-border); }
 
   /* Results */
   #result { margin-top: 0; }
@@ -605,7 +678,7 @@
   @media (max-width: 500px) {
     .hero { padding: 36px 0 28px; }
     .tabs { gap: 2px; }
-    .tab { font-size: 11px; padding: 7px 2px; }
+    .tab { font-size: 11px; padding: 7px 2px; min-width: 70px; }
     .analyzer-header, .analyzer-body { padding-left: 16px; padding-right: 16px; }
     .verdict-header { padding: 16px; }
     .result-body { padding: 0 16px 16px; }
@@ -646,18 +719,37 @@
         <button class="tab" onclick="setTab(this,'url')">Link / URL</button>
         <button class="tab" onclick="setTab(this,'call')">Phone Call</button>
         <button class="tab" onclick="setTab(this,'payment')">Payment</button>
+        <button class="tab" onclick="setTab(this,'image')">Screenshot</button>
       </div>
     </div>
 
     <div class="analyzer-body">
-      <div class="input-row">
-        <span class="input-label" id="input-label">Paste message or email</span>
-        <span class="char-count" id="char-count">0 chars</span>
-      </div>
-      <textarea id="sf-input" placeholder="Paste the suspicious content here..." oninput="updateCount()"></textarea>
+      <div id="text-input-area">
+        <div class="input-row">
+          <span class="input-label" id="input-label">Paste message or email</span>
+          <span class="char-count" id="char-count">0 chars</span>
+        </div>
+        <textarea id="sf-input" placeholder="Paste the suspicious content here..." oninput="updateCount()"></textarea>
 
-      <p class="examples-label">Try an example</p>
-      <div class="examples" id="examples"></div>
+        <p class="examples-label">Try an example</p>
+        <div class="examples" id="examples"></div>
+      </div>
+
+      <div id="image-input-area" style="display:none;">
+        <div class="input-row">
+          <span class="input-label">Upload a screenshot</span>
+        </div>
+        <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
+          <div class="upload-icon">📷</div>
+          <div class="upload-text">Tap to upload, or drag a screenshot here</div>
+          <div class="upload-sub">JPEG, PNG, GIF, or WebP — the image stays in your browser until you hit analyze</div>
+        </div>
+        <div class="preview-wrap" id="preview-wrap" style="display:none;">
+          <img class="preview-img" id="preview-img" alt="Screenshot preview">
+          <button class="preview-remove" onclick="clearImage(event)">✕</button>
+        </div>
+        <input type="file" id="file-input" class="upload-input" accept="image/jpeg,image/png,image/gif,image/webp" onchange="handleFile(this.files[0])">
+      </div>
 
       <button class="analyze-btn" id="analyze-btn" onclick="analyze()">
         🛡 Analyze Now — Not Today, Scammer!
@@ -678,7 +770,7 @@
       <div class="how-card">
         <p class="how-num">01</p>
         <p class="how-title">Paste anything suspicious</p>
-        <p class="how-desc">Message, email, link, phone script, or payment request — any format works.</p>
+        <p class="how-desc">Message, email, link, phone script, payment request, or a screenshot — any format works.</p>
       </div>
       <div class="how-card">
         <p class="how-num">02</p>
@@ -710,6 +802,7 @@ const TABS = {
     label: 'Paste message or email',
     placeholder: 'Paste the suspicious email, text message, or DM here...',
     tabLabel: 'message or email',
+    kind: 'text',
     examples: [
       { short: 'Amazon gift card win', full: 'Congratulations! You won a $500 Amazon gift card. Click here to claim: bit.ly/cl41m-now' },
       { short: 'IRS arrest threat', full: 'This is the IRS. Your SSN has been suspended due to suspicious activity. Call 1-800-555-0199 immediately or face arrest.' },
@@ -721,6 +814,7 @@ const TABS = {
     label: 'Paste suspicious URL',
     placeholder: 'Paste the suspicious link here — do NOT visit it first...',
     tabLabel: 'URL or link',
+    kind: 'text',
     examples: [
       { short: 'Fake PayPal login', full: 'http://paypa1-secure.account-verify.com/login' },
       { short: 'Fake IRS refund', full: 'https://irs-gov-refund-2024.com/claim-your-refund' },
@@ -731,6 +825,7 @@ const TABS = {
     label: 'Describe the phone call',
     placeholder: 'Describe what the caller said, as best you remember...',
     tabLabel: 'phone call description',
+    kind: 'text',
     examples: [
       { short: 'SSN suspended robocall', full: 'A robocall said my Social Security number has been suspended due to suspicious activity and I need to press 1 to speak to a federal officer immediately.' },
       { short: 'Microsoft tech support', full: 'Someone called saying they were from Microsoft and my computer was sending out viruses. They needed remote access to fix it and wanted me to install software.' },
@@ -741,26 +836,42 @@ const TABS = {
     label: 'Describe the payment request',
     placeholder: 'Who is asking for money, how much, and how do they want to be paid?',
     tabLabel: 'payment request',
+    kind: 'text',
     examples: [
       { short: 'Gift card tax demand', full: 'Someone called from the Social Security Administration saying I owe back taxes. They told me to buy $500 in Google Play gift cards and read them the codes to avoid arrest.' },
       { short: 'Zelle before shipping', full: 'I found a great deal on Facebook Marketplace. The seller insists I pay $600 via Zelle before they will ship the item. They say they are out of state.' },
       { short: 'Overpayment check', full: "I got a cashier's check for $3,500 for a mystery shopping job. They want me to deposit it, keep $500, and wire the remaining $3,000 for supplies." }
     ]
+  },
+  image: {
+    label: 'Upload a screenshot',
+    tabLabel: 'screenshot',
+    kind: 'image',
+    examples: []
   }
 };
 
 let currentTab = 'message';
+let currentImageData = null; // { base64, mediaType }
 
 function setTab(el, tab) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
   currentTab = tab;
   const cfg = TABS[tab];
-  document.getElementById('sf-input').placeholder = cfg.placeholder;
-  document.getElementById('input-label').textContent = cfg.label;
   document.getElementById('result').innerHTML = '';
-  renderExamples(tab);
-  updateCount();
+
+  if (cfg.kind === 'image') {
+    document.getElementById('text-input-area').style.display = 'none';
+    document.getElementById('image-input-area').style.display = 'block';
+  } else {
+    document.getElementById('text-input-area').style.display = 'block';
+    document.getElementById('image-input-area').style.display = 'none';
+    document.getElementById('sf-input').placeholder = cfg.placeholder;
+    document.getElementById('input-label').textContent = cfg.label;
+    renderExamples(tab);
+    updateCount();
+  }
 }
 
 function renderExamples(tab) {
@@ -781,11 +892,86 @@ function updateCount() {
 
 renderExamples('message');
 
-async function analyze() {
-  const input = document.getElementById('sf-input').value.trim();
-  if (!input) { document.getElementById('sf-input').focus(); return; }
+// --- Image upload handling ---
 
+const uploadZone = document.getElementById('upload-zone');
+uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+uploadZone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  uploadZone.classList.remove('dragover');
+  if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+});
+
+function handleFile(file) {
+  if (!file) return;
+  const allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+  if (!allowed.includes(file.type)) {
+    alert('Please upload a JPEG, PNG, GIF, or WebP image.');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      const MAX_EDGE = 1568;
+      let { width, height } = img;
+      if (width > MAX_EDGE || height > MAX_EDGE) {
+        const scale = MAX_EDGE / Math.max(width, height);
+        width = Math.round(width * scale);
+        height = Math.round(height * scale);
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+
+      const outputType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+      const dataUrl = canvas.toDataURL(outputType, 0.85);
+      const base64 = dataUrl.split(',')[1];
+
+      currentImageData = { base64, mediaType: outputType };
+
+      const previewImg = document.getElementById('preview-img');
+      previewImg.src = dataUrl;
+      document.getElementById('preview-wrap').style.display = 'block';
+      document.getElementById('upload-zone').style.display = 'none';
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearImage(e) {
+  e.stopPropagation();
+  currentImageData = null;
+  document.getElementById('file-input').value = '';
+  document.getElementById('preview-wrap').style.display = 'none';
+  document.getElementById('upload-zone').style.display = 'block';
+}
+
+// --- Analyze ---
+
+async function analyze() {
+  const cfg = TABS[currentTab];
   const btn = document.getElementById('analyze-btn');
+
+  let body;
+  if (cfg.kind === 'image') {
+    if (!currentImageData) {
+      document.getElementById('upload-zone').click();
+      return;
+    }
+    body = { image: currentImageData.base64, mediaType: currentImageData.mediaType, tabLabel: cfg.tabLabel };
+  } else {
+    const input = document.getElementById('sf-input').value.trim();
+    if (!input) { document.getElementById('sf-input').focus(); return; }
+    body = { content: input, tabLabel: cfg.tabLabel };
+  }
+
   btn.disabled = true;
 
   document.getElementById('result').innerHTML = `
@@ -799,7 +985,7 @@ async function analyze() {
     const res = await fetch('/api/analyze', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content: input, tabLabel: TABS[currentTab].tabLabel })
+      body: JSON.stringify(body)
     });
 
     if (!res.ok) throw new Error('Server error ' + res.status);
@@ -867,6 +1053,7 @@ function renderResult(r) {
 function reset() {
   document.getElementById('sf-input').value = '';
   document.getElementById('result').innerHTML = '';
+  clearImage({ stopPropagation: () => {} });
   updateCount();
 }
 
